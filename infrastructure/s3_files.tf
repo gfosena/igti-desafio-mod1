@@ -8,7 +8,7 @@ resource "aws_s3_object" "job_spark" {
 
   key    = "emr-code/pyspark/job_spark_rais.py"
   acl    = "private"
-  source = "../job_emr.py"
+  source = "../job_spark_rais.py"
   etag   = filemd5("../job_spark_rais.py")
 
 }
