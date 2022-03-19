@@ -3,7 +3,7 @@ resource "aws_glue_catalog_database" "rais" {
 }
 
 resource "aws_glue_crawler" "rais" {
-  database_name = aws_glue_catalog_database.stream.name
+  database_name = aws_glue_catalog_database.rais.name
   name          = "rais_s3_crawler"
   role          = aws_iam_role.glue_role.arn
 
