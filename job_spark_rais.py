@@ -1,6 +1,5 @@
-from pyspark.sql.functions import mean,max,min,col,count
-from pyspark import SparkSession
 from pyspark.sql import functions as f
+from pyspark.sql import SparkSession
 
 spark = (
  SparkSession.builder.appName("DesafioSpark")
