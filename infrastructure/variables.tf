@@ -13,3 +13,7 @@ variable "airflow_subnet_id" {
 variable "vpc_id" {
   default = "vpc-0ce32d2f8f7d53e90"
 }
+
+variable "lambda_function_name" {
+  default = "IGTIexecutaEMR"  
+}
