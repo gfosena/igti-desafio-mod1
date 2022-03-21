@@ -156,11 +156,13 @@ def pipeline_rais():
             )
 
 
-    # Encadeando a pipeline
-    # cluid = emr_process_enem_data()
-    # res_emr = wait_emr_step(cluid)
+ 
+ # Encadeando a pipeline
+    cluid = emr_process_rais_data()
+    res_emr = wait_emr_step(cluid)
+    # newstep = upsert_delta(cluid, res_emr)
     # res_ba = wait_upsert_delta(cluid, newstep)
     # res_ter = terminate_emr_cluster(res_ba, cluid)
-
+    res_ter = terminate_emr_cluster(res_emr, cluid)
 
 execucao = pipeline_rais()
