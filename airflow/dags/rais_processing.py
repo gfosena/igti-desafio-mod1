@@ -21,7 +21,7 @@ s3client = boto3.client("s3", aws_access_key_id=aws_access_key_id,
 
 # Usando a novíssima Taskflow API
 default_args = {
-    'owner': 'gustavo sena',
+    'owner': 'Gustavo Sena',
     "depends_on_past": False,
     "start_date": days_ago(2),
     "email": ["airflow@airflow.com"],
@@ -29,22 +29,22 @@ default_args = {
     "email_on_retry": False
 }
 
-@dag(default_args=default_args, schedule_interval=None, catchup=False, tags=["emr", "aws", "enem"], description="Pipeline para processamento de dados do ENEM 2019")
+@dag(default_args=default_args, schedule_interval=None, catchup=False, tags=["emr", "aws", "rais"], description="Pipeline para processamento de dados da RAIS 2020")
 def pipeline_rais():
     """
-    Pipeline para processamento de dados da rais 2020 
+    Pipeline para processamento de dados do RAIS 2020.
     """
 
     @task
     def emr_process_rais_data():
         cluster_id = client.run_job_flow(
             # verificar nome do cluster e adaptar, se necessário
-            Name='EMR-gustavo-IGTI',
+            Name='EMR-Gustavo-Desafio-Mod1',
             ServiceRole='EMR_DefaultRole',
             JobFlowRole='EMR_EC2_DefaultRole',
             VisibleToAllUsers=True,
             # verificar endereço s3 e adaptar, se necessário
-            LogUri='s3://datalake-gustavo-igti-edc-tf/emr-logs',
+            LogUri='s3://dl-gustavo-igti-edc-desafio-mod1/emr-logs',
             ReleaseLabel='emr-6.3.0',
             # ReleaseLabel='emr-6.5.0',
             Instances={
@@ -69,7 +69,7 @@ def pipeline_rais():
                 'KeepJobFlowAliveWhenNoSteps': True,
                 'TerminationProtected': False,
                 # adaptar sua subnet
-                'Ec2SubnetId': 'subnet-00f2b6c87578c1bc5'
+                'Ec2SubnetId': 'subnet-03a347a88e2a1f2fa'
             },
 
             Applications=[{'Name': 'Spark'}],
@@ -109,7 +109,7 @@ def pipeline_rais():
             ],
 
             Steps=[{
-                'Name': 'processamento dos dados da rais',
+                'Name': 'Primeiro processamento do RAIS',
                 'ActionOnFailure': 'TERMINATE_CLUSTER',
                 'HadoopJarStep': {
                     'Jar': 'command-runner.jar',
@@ -147,7 +147,46 @@ def pipeline_rais():
         )
         return True
 
-   
+    # @task
+    # def upsert_delta(cid: str, success_before: bool):
+    #     if success_before:
+    #         newstep = client.add_job_flow_steps(
+    #             JobFlowId=cid,
+    #             Steps=[{
+    #                 'Name': 'Upsert da tabela Delta',
+    #                 'ActionOnFailure': "TERMINATE_CLUSTER",
+    #                 'HadoopJarStep': {
+    #                     'Jar': 'command-runner.jar',
+    #                     'Args': ['spark-submit',
+    #                             '--packages', 'io.delta:delta-core_2.12:1.0.0',
+    #                             # '--packages', 'io.delta:delta-core_2.12:1.1.0', 
+    #                             '--conf', 'spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension', 
+    #                             '--conf', 'spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog', 
+    #                             '--master', 'yarn',
+    #                             '--deploy-mode', 'cluster',
+    #                             # verificar endereço s3 e adaptar, se necessário
+    #                             's3://dl-gustavo-igti-edc-desafio-mod1/emr-code/pyspark/02_delta_spark_upsert.py'
+    #                         ]
+    #                 }
+    #             }]
+    #         )
+    #         return newstep['StepIds'][0]
+
+    # @task
+    # def wait_upsert_delta(cid: str, stepId: str):
+    #     waiter = client.get_waiter('step_complete')
+
+    #     waiter.wait(
+    #         ClusterId=cid,
+    #         StepId=stepId,
+    #         WaiterConfig={
+    #             'Delay': 30,
+    #             'MaxAttempts': 120
+    #         }
+    #     )
+    #     return True
+
+
     @task
     def terminate_emr_cluster(success_before: str, cid: str):
         if success_before:
@@ -157,17 +196,12 @@ def pipeline_rais():
 
 
     # Encadeando a pipeline
-    # cluid = emr_process_enem_data()
-    # res_emr = wait_emr_step(cluid)
-    # res_ba = wait_upsert_delta(cluid, newstep)
-    # res_ter = terminate_emr_cluster(res_ba, cluid)
-
- # Encadeando a pipeline
     cluid = emr_process_rais_data()
     res_emr = wait_emr_step(cluid)
     # newstep = upsert_delta(cluid, res_emr)
     # res_ba = wait_upsert_delta(cluid, newstep)
     # res_ter = terminate_emr_cluster(res_ba, cluid)
     res_ter = terminate_emr_cluster(res_emr, cluid)
+
 
 execucao = pipeline_rais()

@@ -2,21 +2,15 @@ from pyspark.sql import functions as f
 from pyspark.sql import SparkSession
 
 spark = (
- SparkSession.builder.appName("DesafioSpark")
+    SparkSession.builder.appName("ExerciseSparkRais")
     .getOrCreate()
 )
 
-#ler os dados da rais 2020
+# Ler os dados da RAIS 2020
 rais = (
-    spark
-    .read
-    .format("csv")
-    .option("header",True)
-    .option("inferSchema",True)
-    .option("delimiter",";")
-    .load("s3://datalake-gustavo-007297932932/raw_data/rais/")
+    spark.read
+    .csv("s3://datalake-gustavo-007297932932/raw-data/rais/", inferSchema=True, header=True, sep=';', encoding="latin1")
 )
-
 
 # Corrige nome das colunas
 rais = (
@@ -108,13 +102,13 @@ rais = (
     .withColumn("vl_rem_novembro_sc", f.regexp_replace("vl_rem_novembro_sc", ',', '.').cast('double'))
 )
 
-
+# Converte para parquet
 (
-
     rais
+    .coalesce(50)
     .write
     .mode("overwrite")
+    # .partitionBy('ano', 'uf')
     .format("parquet")
-    .partitionBy("uf")
-    .save("s3://dl-gustavo-igti-edc-desafio-mod1/staging-zone/rais")
+    .save("s3://dl-gustavo-igti-edc-desafio-mod1/staging-zone/rais/")
 )
