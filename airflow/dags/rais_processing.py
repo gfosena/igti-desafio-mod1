@@ -130,9 +130,13 @@ def pipeline_rais():
 
 
     @task
-    def wait_emr_step(cid: str, stepId: str):
+    def wait_emr_step(cid: str):
         waiter = client.get_waiter('step_complete')
-      
+        steps = client.list_steps(
+            ClusterId=cid
+        )
+        stepId = steps['Steps'][0]['Id']
+
         waiter.wait(
             ClusterId=cid,
             StepId=stepId,
@@ -152,7 +156,12 @@ def pipeline_rais():
             )
 
 
- 
+    # Encadeando a pipeline
+    # cluid = emr_process_enem_data()
+    # res_emr = wait_emr_step(cluid)
+    # res_ba = wait_upsert_delta(cluid, newstep)
+    # res_ter = terminate_emr_cluster(res_ba, cluid)
+
  # Encadeando a pipeline
     cluid = emr_process_rais_data()
     res_emr = wait_emr_step(cluid)
