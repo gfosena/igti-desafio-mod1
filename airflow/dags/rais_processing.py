@@ -30,13 +30,13 @@ default_args = {
 }
 
 @dag(default_args=default_args, schedule_interval=None, catchup=False, tags=["emr", "aws", "enem"], description="Pipeline para processamento de dados do ENEM 2019")
-def pipeline_enem():
+def pipeline_rais():
     """
     Pipeline para processamento de dados da rais 2020 
     """
 
     @task
-    def emr_process_enem_data():
+    def emr_process_rais_data():
         cluster_id = client.run_job_flow(
             # verificar nome do cluster e adaptar, se necessário
             Name='EMR-gustavo-IGTI',
@@ -157,9 +157,10 @@ def pipeline_enem():
 
 
     # Encadeando a pipeline
-    cluid = emr_process_enem_data()
-#    res_emr = wait_emr_step(cluid)
-    res_ter = terminate_emr_cluster(cluid)
+    # cluid = emr_process_enem_data()
+    # res_emr = wait_emr_step(cluid)
+    # res_ba = wait_upsert_delta(cluid, newstep)
+    # res_ter = terminate_emr_cluster(res_ba, cluid)
 
 
-execucao = pipeline_enem()
+execucao = pipeline_rais()
