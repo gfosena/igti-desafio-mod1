@@ -130,13 +130,9 @@ def pipeline_rais():
 
 
     @task
-    def wait_emr_step(cid: str):
+    def wait_emr_step(cid: str, stepId: str):
         waiter = client.get_waiter('step_complete')
-        steps = client.list_steps(
-            ClusterId=cid
-        )
-        stepId = steps['Steps'][0]['Id']
-
+      
         waiter.wait(
             ClusterId=cid,
             StepId=stepId,
