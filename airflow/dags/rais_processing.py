@@ -158,8 +158,8 @@ def pipeline_enem():
 
     # Encadeando a pipeline
     cluid = emr_process_enem_data()
-    res_emr = wait_emr_step(cluid)
-    res_ter = terminate_emr_cluster(res_emr, cluid)
+#    res_emr = wait_emr_step(cluid)
+    res_ter = terminate_emr_cluster(cluid)
 
 
 execucao = pipeline_enem()
